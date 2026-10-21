@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+**/.pytest_cache/
+.venv/
+.env
+.env.*
+!.env.example
+
+# Node / Vite
+node_modules/
+dist/
+*.local
+
+# Editors and operating systems
+.DS_Store
+.vscode/
+.idea/

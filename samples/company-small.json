@@ -1,0 +1,52 @@
+{
+  "company": {
+    "name": "Northstar Example Inc"
+  },
+  "teams": [
+    {
+      "name": "Northstar AI",
+      "lead_email": "ai-ops@northstar.example"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Northstar Model API",
+      "resource_type": "API",
+      "endpoint_url": "https://models.northstar.example/v1"
+    },
+    {
+      "name": "Northstar Redis",
+      "resource_type": "MEMORY",
+      "endpoint_url": "redis://cache.northstar.example:6379"
+    }
+  ],
+  "architecture": [
+    {
+      "agent": "Support Assistant",
+      "purpose": "Answers customer support questions",
+      "team": "Northstar AI",
+      "dependencies": [
+        {
+          "name": "Northstar Model API",
+          "dependency_type": "INFERENCE",
+          "is_critical": true
+        },
+        {
+          "name": "Northstar Redis",
+          "dependency_type": "SESSION_MEMORY",
+          "is_critical": false
+        }
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "name": "Customer Support Response",
+      "team": "Northstar AI",
+      "criticality_level": "HIGH",
+      "agents": [
+        "Support Assistant"
+      ]
+    }
+  ]
+}

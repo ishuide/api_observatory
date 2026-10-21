@@ -1,0 +1,113 @@
+{
+    "company": {
+        "name": "Summit Operations Group"
+    },
+    "teams": [
+        {
+            "name": "Summit Operations",
+            "lead_email": "ops@summit.example"
+        },
+        {
+            "name": "Summit Security",
+            "lead_email": "security@summit.example"
+        }
+    ],
+    "resources": [
+        {
+            "name": "Summit Source Control",
+            "resource_type": "TOOL",
+            "endpoint_url": "https://git.summit.example"
+        },
+        {
+            "name": "Summit Build Service",
+            "resource_type": "API",
+            "endpoint_url": "https://build.summit.example/api"
+        },
+        {
+            "name": "Summit Secrets Vault",
+            "resource_type": "API",
+            "endpoint_url": "https://vault.summit.example/api"
+        },
+        {
+            "name": "Summit Deployment API",
+            "resource_type": "API",
+            "endpoint_url": "https://deploy.summit.example/api"
+        },
+        {
+            "name": "Summit Policy Model",
+            "resource_type": "LLM",
+            "endpoint_url": "https://policy.summit.example"
+        },
+        {
+            "name": "Summit Audit Index",
+            "resource_type": "VECTOR_DB",
+            "endpoint_url": "https://audit-index.summit.example"
+        }
+    ],
+    "architecture": [
+        {
+            "agent": "Change Planner",
+            "purpose": "Prepares a release plan from approved changes",
+            "team": "Summit Operations",
+            "dependencies": [
+                {
+                    "name": "Summit Source Control",
+                    "dependency_type": "SOURCE_READ",
+                    "is_critical": true
+                },
+                {
+                    "name": "Summit Build Service",
+                    "dependency_type": "BUILD_STATUS",
+                    "is_critical": true
+                }
+            ]
+        },
+        {
+            "agent": "Policy Reviewer",
+            "purpose": "Checks proposed releases against operational policy",
+            "team": "Summit Security",
+            "dependencies": [
+                {
+                    "name": "Summit Policy Model",
+                    "dependency_type": "INFERENCE",
+                    "is_critical": true
+                },
+                {
+                    "name": "Summit Audit Index",
+                    "dependency_type": "AUDIT_RETRIEVAL",
+                    "is_critical": false
+                }
+            ]
+        },
+        {
+            "agent": "Release Executor",
+            "purpose": "Deploys approved releases using controlled credentials",
+            "team": "Summit Operations",
+            "dependencies": [
+                {
+                    "name": "Summit Secrets Vault",
+                    "dependency_type": "SECRET_ACCESS",
+                    "is_critical": true
+                },
+                {
+                    "name": "Summit Deployment API",
+                    "dependency_type": "DEPLOYMENT",
+                    "is_critical": true
+                }
+            ]
+        }
+    ],
+    "workflows": [
+        {
+            "name": "Controlled Production Release",
+            "team": "Summit Operations",
+            "criticality_level": "CRITICAL",
+            "description": "Plan, review, and deploy a production release.",
+            "agents": [
+                "Change Planner",
+                "Policy Reviewer",
+                "Release Executor"
+            ]
+        }
+    ]
+}

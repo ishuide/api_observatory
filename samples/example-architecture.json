@@ -1,0 +1,83 @@
+{
+    "company": {
+        "name": "Acme Example Corp"
+    },
+    "teams": [
+        {
+            "name": "Acme AI Operations",
+            "lead_email": "ai-ops@acme.example"
+        },
+        {
+            "name": "Acme Data Products",
+            "lead_email": "data-products@acme.example"
+        }
+    ],
+    "resources": [
+        {
+            "name": "Acme Inference Gateway",
+            "resource_type": "API",
+            "endpoint_url": "https://ai.acme.example/v1",
+            "status": "HEALTHY"
+        },
+        {
+            "name": "Acme Knowledge Index",
+            "resource_type": "VECTOR_DB",
+            "endpoint_url": "https://vectors.acme.example",
+            "status": "HEALTHY"
+        },
+        {
+            "name": "Acme Source Control",
+            "resource_type": "TOOL",
+            "endpoint_url": "https://git.acme.example",
+            "status": "HEALTHY"
+        }
+    ],
+    "architecture": [
+        {
+            "agent": "Acme Research Agent",
+            "purpose": "Finds and summarizes internal product evidence",
+            "team": "Acme Data Products",
+            "dependencies": [
+                {
+                    "name": "Acme Inference Gateway",
+                    "dependency_type": "INFERENCE",
+                    "is_critical": true
+                },
+                {
+                    "name": "Acme Knowledge Index",
+                    "dependency_type": "RETRIEVAL",
+                    "is_critical": true
+                }
+            ]
+        },
+        {
+            "agent": "Acme Release Safety Agent",
+            "purpose": "Checks release changes and deployment readiness",
+            "team": "Acme AI Operations",
+            "dependencies": [
+                {
+                    "name": "Acme Source Control",
+                    "dependency_type": "SOURCE_ACCESS",
+                    "is_critical": true
+                },
+                {
+                    "name": "Acme Inference Gateway",
+                    "dependency_type": "INFERENCE",
+                    "is_critical": false
+                }
+            ]
+        }
+    ],
+    "workflows": [
+        {
+            "name": "Acme Assisted Release",
+            "team": "Acme AI Operations",
+            "criticality_level": "HIGH",
+            "description": "Research, review, and prepare a release.",
+            "agents": [
+                "Acme Research Agent",
+                "Acme Release Safety Agent"
+            ]
+        }
+    ]
+}

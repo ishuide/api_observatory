@@ -1,0 +1,103 @@
+{
+  "company": {
+    "name": "Orchard Research Systems"
+  },
+  "teams": [
+    {
+      "name": "Orchard Research",
+      "lead_email": "research@orchard.example"
+    },
+    {
+      "name": "Orchard Platform",
+      "lead_email": "platform@orchard.example"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Orchard Inference",
+      "resource_type": "LLM",
+      "endpoint_url": "https://llm.orchard.example"
+    },
+    {
+      "name": "Orchard Paper Index",
+      "resource_type": "VECTOR_DB",
+      "endpoint_url": "https://vectors.orchard.example"
+    },
+    {
+      "name": "Orchard Document Store",
+      "resource_type": "API",
+      "endpoint_url": "https://docs.orchard.example"
+    },
+    {
+      "name": "Orchard Job Queue",
+      "resource_type": "TOOL",
+      "endpoint_url": "https://queue.orchard.example"
+    }
+  ],
+  "architecture": [
+    {
+      "agent": "Literature Scout",
+      "purpose": "Finds relevant research documents",
+      "team": "Orchard Research",
+      "dependencies": [
+        {
+          "name": "Orchard Paper Index",
+          "dependency_type": "RETRIEVAL",
+          "is_critical": true
+        },
+        {
+          "name": "Orchard Document Store",
+          "dependency_type": "DOCUMENT_READ",
+          "is_critical": true
+        }
+      ]
+    },
+    {
+      "agent": "Evidence Synthesizer",
+      "purpose": "Summarizes retrieved evidence with citations",
+      "team": "Orchard Research",
+      "dependencies": [
+        {
+          "name": "Orchard Inference",
+          "dependency_type": "INFERENCE",
+          "is_critical": true
+        },
+        {
+          "name": "Orchard Paper Index",
+          "dependency_type": "RETRIEVAL",
+          "is_critical": false
+        }
+      ]
+    },
+    {
+      "agent": "Research Publisher",
+      "purpose": "Publishes approved summaries",
+      "team": "Orchard Platform",
+      "dependencies": [
+        {
+          "name": "Orchard Document Store",
+          "dependency_type": "DOCUMENT_WRITE",
+          "is_critical": true
+        },
+        {
+          "name": "Orchard Job Queue",
+          "dependency_type": "ASYNC_TASK",
+          "is_critical": false
+        }
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "name": "Research Brief Production",
+      "team": "Orchard Research",
+      "criticality_level": "HIGH",
+      "description": "Discover, synthesize, and publish an evidence-backed brief.",
+      "agents": [
+        "Literature Scout",
+        "Evidence Synthesizer",
+        "Research Publisher"
+      ]
+    }
+  ]
+}
