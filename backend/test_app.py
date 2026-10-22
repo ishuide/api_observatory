@@ -140,43 +140,6 @@ def test_overview_allows_vite_fallback_port(monkeypatch, client):
     assert response.headers["Access-Control-Allow-Origin"] == "http://127.0.0.1:5174"
 
 
-def test_atomic_onboard_commits_and_returns_new_agent_id(monkeypatch, client):
-    cursor = FakeCursor()
-    connection = FakeConnection(cursor)
-    monkeypatch.setattr("app.get_db_connection", lambda: connection)
-
-    response = client.post("/api/transactions/atomic-onboard", json={
-        "name": "Test Agent",
-        "purpose": "Exercise transaction handler",
-        "team_id": 1,
-        "resource_ids": [],
-    })
-
-    assert response.status_code == 201
-    assert response.get_json()["agent_id"] == 42
-    assert connection.commits == 1
-    assert connection.rollbacks == 0
-    assert any("SAVEPOINT agent_created" in query for query, _ in cursor.calls)
-
-
-def test_atomic_onboard_rolls_back_when_dependency_is_rejected(monkeypatch, client):
-    cursor = FakeCursor(fail_on="INSERT INTO agent_resources")
-    connection = FakeConnection(cursor)
-    monkeypatch.setattr("app.get_db_connection", lambda: connection)
-
-    response = client.post("/api/transactions/atomic-onboard", json={
-        "name": "Rejected Agent",
-        "purpose": "Invalid dependency must roll back",
-        "team_id": 1,
-        "resource_ids": [99],
-    })
-
-    assert response.status_code == 400
-    assert "rolled back" in response.get_json()["error"].lower()
-    assert connection.commits == 0
-    assert connection.rollbacks == 1
-
-
 def test_update_agent_saves_manual_edits(monkeypatch, client):
     cursor = FakeCursor()
     connection = FakeConnection(cursor)

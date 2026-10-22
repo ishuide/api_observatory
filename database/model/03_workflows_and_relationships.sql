@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS workflows (
         REFERENCES companies (company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_workflows_team FOREIGN KEY (team_id)
         REFERENCES teams (team_id) ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS agent_resources (
     agent_id INT UNSIGNED NOT NULL,
@@ -43,4 +43,4 @@ CREATE TABLE IF NOT EXISTS workflow_agents (
         REFERENCES workflows (workflow_id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_workflow_agents_agent FOREIGN KEY (agent_id)
         REFERENCES agents (agent_id) ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB;
+);

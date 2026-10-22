@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     PRIMARY KEY (log_id),
     KEY idx_audit_created (created_at),
     KEY idx_audit_record (table_name, record_id)
-) ENGINE=InnoDB;
+);

@@ -7,9 +7,8 @@ CREATE TABLE IF NOT EXISTS companies (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (company_id),
     UNIQUE KEY uq_companies_name (name)
-) ENGINE=InnoDB;
+);
 
--- Ownership and organizational boundaries within a company.
 CREATE TABLE IF NOT EXISTS teams (
     team_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     company_id INT UNSIGNED NOT NULL,
@@ -21,4 +20,7 @@ CREATE TABLE IF NOT EXISTS teams (
     UNIQUE KEY uq_teams_company_email (company_id, lead_email),
     CONSTRAINT fk_teams_company FOREIGN KEY (company_id)
         REFERENCES companies (company_id) ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
+
+-- propagates a change to a referenced key to dependent rows
+-- prevents deleting a company while dependent teams still reference it

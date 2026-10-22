@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS app_users (
     last_login_at TIMESTAMP NULL,
     PRIMARY KEY (user_id),
     UNIQUE KEY uq_app_users_username (username)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS app_roles (
     role_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS app_roles (
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY (role_id),
     UNIQUE KEY uq_app_roles_name (role_name)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS app_permissions (
     permission_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS app_permissions (
     description VARCHAR(255) NOT NULL,
     PRIMARY KEY (permission_id),
     UNIQUE KEY uq_app_permissions_key (permission_key)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS app_user_roles (
     user_id INT UNSIGNED NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS app_user_roles (
         REFERENCES app_users (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_app_user_roles_role FOREIGN KEY (role_id)
         REFERENCES app_roles (role_id) ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS app_role_permissions (
     role_id SMALLINT UNSIGNED NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS app_role_permissions (
         REFERENCES app_roles (role_id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_app_role_permissions_permission FOREIGN KEY (permission_id)
         REFERENCES app_permissions (permission_id) ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 INSERT INTO app_roles (role_name, description) VALUES
     ('Admin', 'Manage users and perform all registry operations'),

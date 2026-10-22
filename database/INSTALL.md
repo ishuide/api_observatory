@@ -50,7 +50,6 @@ It prompts for a username/password and stores a Werkzeug password hash. It does 
 
 - `sample_data/registry_demo_data.sql`: sample data for `AI Agent Demo Company`.
 - `analytics/registry_questions.sql`: read-only registry and impact queries.
-- `operations/atomic_onboarding_demo.sql`: a transaction demo; run against a disposable database because it commits a row.
 - `design/normalization_and_model.sql`: normalization explanation and key inspection.
 
 ## Import semantics

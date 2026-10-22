@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Database, Cpu, Activity, AlertTriangle,
   Trash2, RefreshCw, Plus, Terminal, Layers, Pencil,
-  UploadCloud, Share2, GitCommit, Play
+  UploadCloud, Share2
 } from "lucide-react";
 import DependencyGraph from "./DependencyGraph";
 
@@ -11,7 +11,7 @@ const API = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:
 export default function App() {
   const [data, setData] = useState({ agents: [], resources: [], workflows: [], dependencies: [], teams: [], companies: [] });
   const [selectedCompanyId, setSelectedCompanyId] = useState("");
-  const [activeTab, setActiveTab] = useState("registry"); // 'registry' | 'graph' | 'blast' | 'atomic' | 'audit'
+  const [activeTab, setActiveTab] = useState("registry"); // 'registry' | 'graph' | 'blast' | 'audit'
   const [auditLogs, setAuditLogs] = useState([]);
   const [impactData, setImpactData] = useState([]);
   const [selectedResource, setSelectedResource] = useState("");
@@ -35,15 +35,6 @@ export default function App() {
   const [editingResourceId, setEditingResourceId] = useState(null);
   const [newDep, setNewDep] = useState({ agent_id: "", resource_id: "", dependency_type: "Inference", is_critical: true });
 
-  // TCL Atomic Onboarder State
-  const [atomicForm, setAtomicForm] = useState({
-    name: "",
-    purpose: "",
-    team_id: "",
-    resource_ids: [],
-    workflow_id: "",
-    execution_step: 1
-  });
 
   const notify = (msg, type = "info") => {
     setNotice({ msg, type });
@@ -76,12 +67,11 @@ export default function App() {
       }
       if (json.teams.length > 0) {
         if (!newAgent.team_id) setNewAgent(prev => ({ ...prev, team_id: json.teams[0].team_id }));
-        if (!atomicForm.team_id) setAtomicForm(prev => ({ ...prev, team_id: json.teams[0].team_id }));
       }
     } catch (error) {
       notify(`Failed to connect to backend API: ${error.message}`, "error");
     }
-  }, [newAgent.team_id, atomicForm.team_id, apiFetch, selectedCompanyId]);
+  }, [newAgent.team_id, apiFetch, selectedCompanyId]);
 
   const fetchAudit = async () => {
     const res = await apiFetch("/audit");
@@ -308,30 +298,6 @@ export default function App() {
     setImpactData(json);
   };
 
-  // TCL Multi-table atomic onboarder
-  const handleAtomicSubmit = async (e) => {
-    e.preventDefault();
-    const res = await apiFetch("/transactions/atomic-onboard", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(atomicForm)
-    });
-    const json = await res.json();
-    if (res.ok) {
-      notify(json.message, "success");
-      setAtomicForm({
-        name: "",
-        purpose: "",
-        team_id: data.teams[0]?.team_id || "",
-        resource_ids: [],
-        workflow_id: "",
-        execution_step: 1
-      });
-      fetchOverview();
-    } else {
-      notify(json.error, "error");
-    }
-  };
 
   // JSON Ingestion
   const handleFileUpload = async (e) => {
@@ -412,11 +378,6 @@ export default function App() {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'blast' ? 'bg-rose-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
             <AlertTriangle className="w-3.5 h-3.5" /> Blast Radius
           </button>
-          {hasPermission("agents.manage") && <button
-            onClick={() => setActiveTab("atomic")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'atomic' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
-            <GitCommit className="w-3.5 h-3.5" /> Atomic Onboard (TCL)
-          </button>}
           <button
             onClick={() => { setActiveTab("audit"); fetchAudit(); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === 'audit' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
@@ -875,88 +836,6 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 4: ATOMIC TRANSACTION ONBOARDER (TCL) */}
-        {activeTab === "atomic" && hasPermission("agents.manage") && (
-          <div className="max-w-2xl mx-auto bg-slate-900/60 border border-slate-800 rounded-xl p-6 shadow-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <GitCommit className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-sm font-bold text-white">Multi-Table Atomic Onboarding (TCL)</h2>
-            </div>
-            <p className="text-xs text-slate-400 mb-6">
-              Executes within a MySQL transaction (`START TRANSACTION ... SAVEPOINT ... COMMIT`). If an offline resource is attached or a workflow constraint fails, every change is rolled back.
-            </p>
-
-            <form onSubmit={handleAtomicSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-400 mb-1">Agent Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ingestion Pipeline Agent"
-                  value={atomicForm.name}
-                  onChange={e => setAtomicForm({ ...atomicForm, name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200" required
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1">Purpose</label>
-                <input
-                  type="text"
-                  placeholder="Responsibility description"
-                  value={atomicForm.purpose}
-                  onChange={e => setAtomicForm({ ...atomicForm, purpose: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200" required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-400 mb-1">Owning Team</label>
-                  <select
-                    value={atomicForm.team_id}
-                    onChange={e => setAtomicForm({ ...atomicForm, team_id: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200" required>
-                    {data.teams.map(t => <option key={t.team_id} value={t.team_id}>{t.name}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-400 mb-1">Target Workflow</label>
-                  <select
-                    value={atomicForm.workflow_id}
-                    onChange={e => setAtomicForm({ ...atomicForm, workflow_id: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200">
-                    <option value="">-- Optional: Assign Pipeline --</option>
-                    {data.workflows.map(w => <option key={w.workflow_id} value={w.workflow_id}>{w.name}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1">Attach Resources (Select multiple for batch linking)</label>
-                <select
-                  multiple
-                  value={atomicForm.resource_ids}
-                  onChange={e => {
-                    const selected = Array.from(e.target.selectedOptions, opt => parseInt(opt.value));
-                    setAtomicForm({ ...atomicForm, resource_ids: selected });
-                  }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-slate-200 h-28">
-                  {data.resources.map(r => (
-                    <option key={r.resource_id} value={r.resource_id} className="py-1">
-                      {r.name} ({r.resource_type}) - Status: {r.status}
-                    </option>
-                  ))}
-                </select>
-                <span className="text-[10px] text-slate-500">Hold Cmd / Ctrl to select multiple dependencies</span>
-              </div>
-
-              <button type="submit" className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded font-semibold text-white transition flex items-center justify-center gap-2">
-                <Play className="w-4 h-4 fill-white" /> Execute Atomic Transaction Block
-              </button>
-            </form>
-          </div>
-        )}
 
         {/* TAB 5: AUDIT LOGS */}
         {activeTab === "audit" && (

@@ -679,60 +679,6 @@ def get_audit():
         close_db(cursor, connection)
 
 
-@app.post("/api/transactions/atomic-onboard")
-@require_permission("agents.manage")
-def atomic_onboard():
-    data = request.get_json(silent=True) or {}
-    required = ("name", "purpose", "team_id")
-    if any(not data.get(field) for field in required):
-        return error_response("name, purpose, and team_id are required")
-    connection = cursor = None
-    try:
-        connection = get_db_connection()
-        connection.start_transaction()
-        cursor = connection.cursor()
-        cursor.execute("SELECT company_id FROM teams WHERE team_id = %s", (data["team_id"],))
-        team = cursor.fetchone()
-        if team is None:
-            return error_response("Selected team does not exist", 400)
-        company_id = team[0]
-        cursor.execute("""
-            INSERT INTO agents (company_id, name, purpose, team_id)
-            VALUES (%s, %s, %s, %s)
-        """, (company_id, data["name"].strip(), data["purpose"].strip(), data["team_id"]))
-        new_agent_id = cursor.lastrowid
-        cursor.execute("SAVEPOINT agent_created")
-        for resource_id in data.get("resource_ids", []):
-            cursor.execute("SELECT company_id FROM resources WHERE resource_id = %s", (resource_id,))
-            resource = cursor.fetchone()
-            if resource is None or resource[0] != company_id:
-                raise ValueError("Selected resource does not belong to the agent's company")
-            cursor.execute("""
-                INSERT INTO agent_resources (agent_id, resource_id, dependency_type, is_critical)
-                VALUES (%s, %s, %s, TRUE)
-            """, (new_agent_id, resource_id, data.get("dependency_type", "RUNTIME")))
-        if data.get("workflow_id"):
-            cursor.execute("SELECT company_id FROM workflows WHERE workflow_id = %s", (data["workflow_id"],))
-            workflow = cursor.fetchone()
-            if workflow is None or workflow[0] != company_id:
-                raise ValueError("Selected workflow does not belong to the agent's company")
-            cursor.execute("""
-                INSERT INTO workflow_agents (workflow_id, agent_id, execution_step)
-                VALUES (%s, %s, %s)
-            """, (data["workflow_id"], new_agent_id, data.get("execution_step", 1)))
-        connection.commit()
-        return jsonify({
-            "message": f"Transaction committed: agent '{data['name']}' onboarded",
-            "agent_id": new_agent_id,
-        }), 201
-    except (mysql.connector.Error, TypeError, ValueError) as error:
-        if connection:
-            connection.rollback()
-        return error_response(f"Transaction rolled back: {error}")
-    finally:
-        close_db(cursor, connection)
-
-
 @app.get("/api/admin/users")
 @require_permission("users.manage")
 def list_users():

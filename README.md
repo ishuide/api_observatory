@@ -24,7 +24,6 @@ The frontend is served at a Vite URL such as `http://127.0.0.1:5173/`; the backe
 - Recursive workflow blast-radius analysis when a critical resource fails.
 - Database-triggered audit records and prevention of new links to offline resources.
 - Stored procedures for resource cascade deactivation and recovery.
-- Transactional multi-table agent onboarding, including optional resource and workflow links.
 - Company snapshot imports: upload one or many JSON files; each file fully replaces only that company's teams, resources, agents, dependencies, and workflows.
 - Manual agent and resource management: create/edit agents, create/edit/delete resources, and manage resource health.
 - Database-backed application RBAC with `Admin`, `Operator`, and `Viewer` roles.
@@ -53,7 +52,6 @@ DBMS/
 |   |-- features/
 |   |-- analytics/
 |   |-- security/
-|   |-- operations/
 |   `-- design/
 |-- frontend/
 |   |-- src/
@@ -74,7 +72,6 @@ Start MySQL Server first. The detailed, ordered setup command list is maintained
 - `features/`: implement dependency governance and resource health behavior, including their triggers and stored procedures.
 - `analytics/`: queries for registry health, exposure, workflows, and recursive failure impact.
 - `security/`: a least-privilege application role (DCL).
-- `operations/`: a transaction example of atomic agent onboarding (TCL).
 - `design/`: normalization rationale and relational model inspection queries.
 
 Setup scripts are non-destructive to existing tables. Run them in order on a new or appropriately prepared database. Feature scripts drop and recreate only their own triggers/procedures when rerun.
@@ -143,7 +140,6 @@ Open **http://127.0.0.1:5173/**. For a different backend URL, create `frontend/.
 - **Triggers:** `database/features/dependency_governance.sql` blocks attaching agents to offline resources and records dependency additions/removals. `database/features/resource_health_management.sql` audits resource and agent status transitions.
 - **Stored procedures:** resource health procedures in `database/features/resource_health_management.sql` provide the UI's cascade-failure and recovery actions.
 - **Queries:** `database/analytics/registry_questions.sql` implements the registry reports and recursive CTE used for business impact analysis.
-- **Transactions (TCL):** the atomic onboarding API commits or rolls back an agent plus its selected resources/workflow as one unit. `database/operations/atomic_onboarding_demo.sql` demonstrates transaction, savepoint, commit, and rollback behavior in MySQL itself.
 - **DCL:** `database/security/application_role.sql` creates a least-privilege role for the Flask application rather than granting it database administrator access.
 - **Application RBAC:** `database/migrations/006_application_rbac.sql` stores users, roles, permissions, and their assignments. Flask verifies password hashes and enforces database-loaded permissions at the API.
 
@@ -178,7 +174,6 @@ Example imports are available in `samples/`: `company-small.json` is a small one
 | Dependency binding | Junction table, foreign keys, trigger, audit log | Prevents invalid links and records architecture changes |
 | Resource outage simulation | Recursive CTE, stored procedure, transaction, status triggers | Shows which agents/workflows are affected and updates their state consistently |
 | Resource recovery | Stored procedure, conditional update, status triggers | Restores healthy service without reactivating agents that still have another critical offline dependency |
-| Atomic agent onboarding | Multi-table transaction, savepoint, constraints, rollback | Avoids partially registered agents when a dependency or workflow link fails |
 | Registry overview and graph | Normalized joins, aggregate queries, indexes | Presents consistent current ownership and dependency information |
 | Audit view | Trigger-written audit rows, indexed chronological query | Makes operational changes visible to project users |
 | User access management | RBAC junction tables and API permission checks | Admins control who can view, operate, or administer the registry |
@@ -216,7 +211,6 @@ Login uses HTTP-only session cookies and CSRF tokens on write requests. The fron
 | `POST` | `/api/resources/<resource_id>/recover` | Call the recovery procedure |
 | `GET` | `/api/impact/<resource_id>` | Return recursive workflow impact |
 | `GET` | `/api/audit` | Return recent database audit entries |
-| `POST` | `/api/transactions/atomic-onboard` | Atomically onboard an agent and optional associations |
 | `POST` | `/api/ingest` | Ingest an uploaded architecture JSON file |
 
 ## Tests and Build
@@ -236,5 +230,5 @@ npm run build
 
 - Configure a MySQL account with application permissions and verify the ordered SQL setup against the actual local server. The local MySQL client is installed, but the current shell could not authenticate as `root` without a password, so a live database run was not verified here.
 - Add integration tests using a disposable MySQL database to verify triggers, stored procedures, foreign keys, and recursive query behavior.
-- Review whether workflow editing and resource CRUD are required for the project rubric; the current UI focuses on registry, dependencies, impact, and onboarding.
+- Review whether workflow editing and resource CRUD are required for the project rubric; the current UI focuses on registry, dependencies, impact, and monitoring.
 - For deployment, disable Flask debug mode, configure an explicit trusted CORS origin, use a secret manager, and run Flask behind a production WSGI server.

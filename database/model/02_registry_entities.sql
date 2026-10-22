@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS resources (
     KEY idx_resources_status (status),
     CONSTRAINT fk_resources_company FOREIGN KEY (company_id)
         REFERENCES companies (company_id) ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS agents (
     agent_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -32,4 +32,4 @@ CREATE TABLE IF NOT EXISTS agents (
         REFERENCES companies (company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_agents_team FOREIGN KEY (team_id)
         REFERENCES teams (team_id) ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
