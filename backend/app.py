@@ -4,6 +4,12 @@ import secrets
 from datetime import timedelta
 from functools import wraps
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import mysql.connector
 from flask import Flask, g, jsonify, request, session
 from flask_cors import CORS
@@ -33,7 +39,7 @@ app.config.update(
 
 DB_CONFIG = {
     "host": os.environ.get("DB_HOST", "127.0.0.1"),
-    "port": int(os.environ.get("DB_PORT", "3306")),
+    "port": int(os.environ.get("DB_PORT", "3307")),
     "user": os.environ.get("DB_USER", "root"),
     "password": os.environ.get("DB_PASSWORD", ""),
     "database": os.environ.get("DB_NAME", "ai_agent_registry"),
